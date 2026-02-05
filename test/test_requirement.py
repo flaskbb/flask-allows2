@@ -2,9 +2,9 @@ import operator
 
 import pytest
 
-from flask_allows.allows import Allows
-from flask_allows.overrides import Override, OverrideManager
-from flask_allows.requirements import (
+from flask_allows2.allows import Allows
+from flask_allows2.overrides import Override, OverrideManager
+from flask_allows2.requirements import (
     And,
     C,
     ConditionalRequirement,
@@ -19,7 +19,9 @@ def test_cant_create_Requirement():
     with pytest.raises(TypeError) as excinfo:
         Requirement()
 
-    assert "with abstract method fulfill" in str(excinfo.value)
+    assert "without an implementation for abstract method 'fulfill'" in str(
+        excinfo.value
+    )
 
 
 def test_call_fulfills_with_call(spy):
@@ -181,7 +183,6 @@ def test_ConditionalRequirement_supports_new_style_requirements(member):
     assert C(is_true)(member)
 
 
-@pytest.mark.regression
 def test_wants_request_stops_incorrect_useronly_flow(member):
     """
     When a request parameter has a default value, requirement runners will

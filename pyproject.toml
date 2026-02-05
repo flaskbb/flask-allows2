@@ -1,0 +1,85 @@
+[project]
+name = "Flask-Allows2"
+version = "1.0.0"
+description = "Impose authorization requirements on Flask routes"
+readme = "README.rst"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["flask", "authorization", "permissions"]
+authors = [
+  {name = "Alec Nikolas Reiter", email = "alecreiter@gmail.com"},
+]
+maintainers = [{name = "Peter Justin", email = "peter.justin@outlook.com"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Internet :: WWW/HTTP :: WSGI",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "Flask>=2.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "sphinx_rtd_theme",
+    "sphinx",
+    "sphinx-tabs",
+    "sphinx-issues",
+    "coverage",
+    "pytest",
+]
+
+[project.urls]
+Documentation = "https://flask-allows2.readthedocs.io/en/latest/"
+Source = "https://github.com/flaskbb/flask-allows2"
+Issues = "https://github.com/flaskbb/flask-allows2/issues"
+
+[build-system]
+requires = ["flit_core>=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "flask_allows2"
+
+[tool.flit.sdist]
+include = [
+    "docs/",
+    "tests/",
+    "CHANGELOG",
+    "NOTICE",
+    "uv.lock"
+]
+exclude = [
+    "docs/_build/",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+src = ["src"]
+fix = true
+show-fixes = true
+output-format = "full"
+
+[tool.ruff.lint]
+select = [
+    "B",  # flake8-bugbear
+    "E",  # pycodestyle error
+    "F",  # pyflakes
+    "I",  # isort
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warning
+]
+
+[tool.pytest]
+norecursedirs = [".tox", ".git", ".cache", "*.egg", "htmlcov"]
+addopts = ["-vvl",  "--capture", "fd", "--strict", "-W error:::flask_allows2"]

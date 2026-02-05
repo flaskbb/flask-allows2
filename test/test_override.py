@@ -1,12 +1,12 @@
 import pytest
 
-from flask_allows.overrides import (
+from flask_allows2.overrides import (
     Override,
     OverrideManager,
     _override_ctx_stack,
     current_overrides,
 )
-from flask_allows.requirements import Requirement
+from flask_allows2.requirements import Requirement
 
 
 def some_requirement(user):

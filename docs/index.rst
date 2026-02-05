@@ -1,15 +1,15 @@
-############
-Flask-Allows
-############
+#############
+Flask-Allows2
+#############
 
 Version |version| (:ref:`Change log <changelog>`)
 
-Flask-Allows gives you the ability to impose identity requirements on routes
+Flask-Allows2 gives you the ability to impose identity requirements on routes
 in your Flask application::
 
 
     from flask import Flask
-    from flask_allows import Allows, Requirement
+    from flask_allows2 import Allows, Requirement
     from flask_login import current_user
 
     app = Flask(__name__)
@@ -28,18 +28,17 @@ in your Flask application::
 Installation
 ************
 
-Flask-Allows is available on `pypi <https://pypi.org/project/flask-allows/>`_ and
+Flask-Allows2 is available on `pypi <https://pypi.org/project/Flask-Allows2/>`_ and
 installable with::
 
-    pip install flask-allows
+    pip install Flask-Allows2
 
-Flask Allows supports 2.7, and 3.4+. Support for 3.3 was ended in the version
-0.3 release.
+Flask-Allows2 supports 3.12+.
 
 .. note::
 
-    If you are installing ``flask-allows`` outside of a virtual environment,
-    consider installing it with ``pip install --user flask-allows`` rather
+    If you are installing ``Flask-Allows2`` outside of a virtual environment,
+    consider installing it with ``pip install --user Flask-Allows2`` rather
     than using sudo or adminstrator privileges to avoid installing it into
     your system Python.
 

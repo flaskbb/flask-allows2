@@ -5,7 +5,7 @@
 Helpers
 #######
 
-In addition to the :class:`~flask_allows.allows.Allows`, there are several
+In addition to the :class:`~flask_allows2.allows.Allows`, there are several
 helper classes and functions available.
 
 
@@ -13,7 +13,7 @@ helper classes and functions available.
 Permission
 **********
 
-:class:`~flask_allows.permission.Permission` enables checking permissions as a
+:class:`~flask_allows2.permission.Permission` enables checking permissions as a
 boolean or controlling access to sections of code with a context manager. To
 construct a Permission, provide it with a collection of requirements to enforce
 and optionally any combination of:
@@ -67,7 +67,7 @@ requires
 
 If you're using factory methods to create your Flask application and extensions,
 it's often difficult to get ahold of a reference to the allows object. Because
-of this, the :func:`~flask_allows.view.requires` helper exists as well. This
+of this, the :func:`~flask_allows2.view.requires` helper exists as well. This
 is a function that calls the configured allows object when the wrapped function
 is invoked::
 

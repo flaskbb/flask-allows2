@@ -2,7 +2,7 @@ import pytest
 from flask.views import MethodView, View
 from werkzeug.exceptions import Forbidden
 
-from flask_allows import Allows, requires
+from flask_allows2 import Allows, requires
 
 
 def test_requires_allows(app, member, ismember):

@@ -9,7 +9,7 @@ from werkzeug.exceptions import Forbidden
 from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
 
-__all__ = ("Allows")
+__all__ = "Allows"
 
 
 class Allows(object):
@@ -216,6 +216,7 @@ class Allows(object):
                 return result
             raise throws
 
+
 def _get_allows(app=None, silent=False):
     """Gets the application-specific Allows data.
 
@@ -226,13 +227,14 @@ def _get_allows(app=None, silent=False):
     if app is None:
         app = current_app
 
-    if silent and (not app or 'allows' not in app.extensions):
+    if silent and (not app or "allows" not in app.extensions):
         return None
 
-    if 'allows' not in app.extensions:
+    if "allows" not in app.extensions:
         raise RuntimeError("Flask-Allows not configured against current app")
 
-    return app.extensions['allows']
+    return app.extensions["allows"]
+
 
 def _make_callable(func_or_value):
     if not callable(func_or_value):

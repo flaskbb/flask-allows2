@@ -1,14 +1,14 @@
 [run]
 branch = true
-source = flask_allows
+source = flask_allows2
 omit =
         __meta__.py
 parallel = true
 
 [paths]
 source =
-   src/flask_allows/
-   .tox/*/lib/*/site-packages/flask_allows/
+   src/flask_allows2/
+   .tox/*/lib/*/site-packages/flask_allows2/
 
 [report]
 exclude_lines =

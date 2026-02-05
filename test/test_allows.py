@@ -2,9 +2,9 @@ import pytest
 from flask import Response
 from werkzeug.exceptions import Forbidden
 
-from flask_allows import Allows
-from flask_allows.additional import Additional, current_additions
-from flask_allows.overrides import Override, current_overrides
+from flask_allows2 import Allows
+from flask_allows2.additional import Additional, current_additions
+from flask_allows2.overrides import Override, current_overrides
 
 
 def test_warns_about_request_deprecation_with_old_style_requirement(member):

@@ -1,12 +1,12 @@
 import pytest
 
-from flask_allows.additional import (
+from flask_allows2.additional import (
     Additional,
     AdditionalManager,
     _additional_ctx_stack,
     current_additions,
 )
-from flask_allows.requirements import Requirement
+from flask_allows2.requirements import Requirement
 
 
 def some_requirement(user):

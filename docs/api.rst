@@ -1,51 +1,51 @@
 .. _api:
 
-################
-flask_allows API
-################
+#################
+Flask-Allows2 API
+#################
 
 Extension
 =========
-.. autoclass:: flask_allows.allows.Allows
+.. autoclass:: flask_allows2.allows.Allows
     :members:
 
 Permission Helper
 =================
 
-.. autoclass:: flask_allows.permission.Permission
+.. autoclass:: flask_allows2.permission.Permission
     :members:
 
 Requirements Base Classes
 =========================
 
-.. autoclass:: flask_allows.requirements.Requirement
+.. autoclass:: flask_allows2.requirements.Requirement
     :members:
 
-.. autoclass:: flask_allows.requirements.ConditionalRequirement
+.. autoclass:: flask_allows2.requirements.ConditionalRequirement
     :members:
 
 
 Override Management
 ===================
 
-.. autoclass:: flask_allows.overrides.Override
+.. autoclass:: flask_allows2.overrides.Override
     :members:
 
-.. autoclass:: flask_allows.overrides.OverrideManager
+.. autoclass:: flask_allows2.overrides.OverrideManager
     :members:
 
 
-.. autoclass:: flask_allows.additional.Additional
+.. autoclass:: flask_allows2.additional.Additional
     :members:
 
-.. autoclass:: flask_allows.additional.AdditionalManager
+.. autoclass:: flask_allows2.additional.AdditionalManager
     :members:
 
 
 Utilities
 =========
 
-.. autofunction:: flask_allows.views.requires
-.. autofunction:: flask_allows.views.exempt_from_requirements
-.. autofunction:: flask_allows.views.guard_entire
-.. autofunction:: flask_allows.requirements.wants_request
+.. autofunction:: flask_allows2.views.requires
+.. autofunction:: flask_allows2.views.exempt_from_requirements
+.. autofunction:: flask_allows2.views.guard_entire
+.. autofunction:: flask_allows2.requirements.wants_request

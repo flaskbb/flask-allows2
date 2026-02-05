@@ -3,9 +3,9 @@ from collections import namedtuple
 import pytest
 from flask import Flask
 
-from flask_allows import Requirement
-from flask_allows.additional import _additional_ctx_stack
-from flask_allows.overrides import _override_ctx_stack
+from flask_allows2 import Requirement
+from flask_allows2.additional import _additional_ctx_stack
+from flask_allows2.overrides import _override_ctx_stack
 
 
 class AuthLevels:

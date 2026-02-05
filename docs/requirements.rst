@@ -6,7 +6,7 @@ Requirements
 ############
 
 
-Requirements are how routes and code paths are guarded with Flask-Allows, they
+Requirements are how routes and code paths are guarded with Flask-Allows2, they
 are also entirely defined by the user. Requirements come in two flavors:
 
 - functions
@@ -39,7 +39,7 @@ to guard a route with it::
     def admin():
         return render_template('admin.html')
 
-Or guard a particular code path with :class:`~flask_allows.permission.Permission`::
+Or guard a particular code path with :class:`~flask_allows2.permission.Permission`::
 
     p = Permission(user_is_admin)
     if p:
@@ -109,10 +109,10 @@ that prefer an object oriented approach instead.
 Combining Requirements
 **********************
 
-In addition to the :class:`~flask_allows.requirements.Requirement` base class,
+In addition to the :class:`~flask_allows2.requirements.Requirement` base class,
 Flask-Allows also provides a way to combine requirements.
 
-All requirement runners provided by Flask-Allows accept multiple requirements
+All requirement runners provided by Flask-Allows2 accept multiple requirements
 and all must pass for the verification to pass::
 
 
@@ -127,10 +127,10 @@ user must be logged in AND a user must be an admin OR a user must have the
 ``'view_admin_panel'`` permission, these can be difficult to express in an
 all-or-nothing evaluation strategy.
 
-To handle these situations, Flask-Allows exposes several helper requirements::
+To handle these situations, Flask-Allows2 exposes several helper requirements::
 
 
-    from flask_allows import And, Or
+    from flask_allows2 import And, Or
 
 
     @app.route('/admin')
@@ -145,14 +145,14 @@ The ``And`` help is most useful when nested inside of an ``Or`` such as::
 
     Or(user_is_admin, And(Has('view_admin_panel'), user_is_moderator))
 
-Flask-Allows also exposes a helper to invert the result of a requirement::
+Flask-Allows2 also exposes a helper to invert the result of a requirement::
 
     @app.route('/login')
     @requires(Not(user_is_logged_in))
     def login():
         return render_template('login.html')
 
-Finally, Flask-Allows also exposes a generalized version of these helpers called
+Finally, Flask-Allows2 also exposes a generalized version of these helpers called
 :class:`~flask_allows.requirements.ConditionalRequirement` (also importable as
 ``C`` to avoid typing out the name every time).
 
@@ -195,7 +195,7 @@ As of version 0.5, passing the request object directly into a requirement is
 deprecated and will be removed in version 1.0. Considering the following
 requirement::
 
-    from flask_allows import Requirement
+    from flask_allows2 import Requirement
 
     class AllowedToViewPost(Requirement):
         def fulfill(self, user, request):
@@ -213,7 +213,7 @@ In order to make the transition to a user only requirement, the only change to
 make is::
 
     from flask import request
-    from flask_allows import Requirement
+    from flask_allows2 import Requirement
 
     class AllowedToViewPost(Requirement):
         def fulfill(self, user):
@@ -251,7 +251,7 @@ them as needed.
     may remove the parameter altogether and import ``request`` directly from
     Flask.
 
-    Additionally, there is :meth:`~flask_allows.requirements.wants_request`
+    Additionally, there is :meth:`~flask_allows2.requirements.wants_request`
     which marks the requirement as user only but passes the current request
     behind the scenes. This decorator is intended only to assist during a
     transitionary phase and will be remove in flask-allows 1.0

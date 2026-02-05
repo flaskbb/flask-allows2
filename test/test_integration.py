@@ -5,7 +5,7 @@ import pytest
 from flask import Blueprint, Flask, g, jsonify, request
 from flask.views import MethodView
 
-from flask_allows import (
+from flask_allows2 import (
     Additional,
     Allows,
     And,
@@ -19,10 +19,8 @@ from flask_allows import (
     guard_entire,
     requires,
 )
-from flask_allows.additional import _additional_ctx_stack
-from flask_allows.overrides import _override_ctx_stack
-
-pytestmark = pytest.mark.integration
+from flask_allows2.additional import _additional_ctx_stack
+from flask_allows2.overrides import _override_ctx_stack
 
 # This is a whole bunch of setup for the integration tests
 # route registrations, user setup, etc

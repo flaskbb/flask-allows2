@@ -7,7 +7,7 @@ Controlling Failure
 
 
 When dealing with permissioning, failure is an expected and desired outcome. And
-Flask-Allows provides several measures to deal with this failure.
+Flask-Allows2 provides several measures to deal with this failure.
 
 
 *********************
@@ -17,7 +17,7 @@ Throwing an exception
 The first measure is the ability to configure requirements runners to throw an
 exception. By default this will be werkzeug's Forbidden exception. However,
 this can be set to be any exception type or specific instance. The easiest
-way to set this is through the :class:`~flask_allows.allows.Allows` constructor::
+way to set this is through the :class:`~flask_allows2.allows.Allows` constructor::
 
     class PermissionError(Exception):
         def __init__(self):
@@ -58,7 +58,7 @@ it should be prepared to accept any arbitrary arguments that were provided when
 the requirement runner that was invoked.
 
 To add a failure callback, it can be provided to the
-:class:`~flask_allows.allows.Allows` constructor::
+:class:`~flask_allows2.allows.Allows` constructor::
 
     def flash_failure_message(*args, **kwargs):
         flash("I'm sorry Dave, I'm afraid I can't do that", "error")
@@ -84,7 +84,7 @@ However, any value can be returned from this wrapper.
 
 .. note::
 
-    When used with the :class:`~flask_allows.permission.Permission` helper,
+    When used with the :class:`~flask_allows2.permission.Permission` helper,
     the callback will be invoked with no arguments and the return value isn't
     considered.
 

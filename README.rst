@@ -1,20 +1,12 @@
-.. image:: https://travis-ci.org/justanr/flask-allows.svg?branch=master
-    :target: https://travis-ci.org/justanr/flask-allows
-
-.. image:: https://coveralls.io/repos/github/justanr/flask-allows/badge.svg?branch=master
-    :target: https://coveralls.io/github/justanr/flask-allows?branch=master
-
-
-
-flask-allows
-============
+Flask-Allows2
+=============
 
 Are your permissions making too much noise all the time? Are your permissions
 stomping all over your actual code? Are your permission decorators clawing
 at your line count all the time? Think there's no answer? There is! Flask-Allows.
 
 
-Flask-Allows is an authorization tool for Flask inspired by
+Flask-Allows2 is an authorization tool for Flask inspired by
 `django-rest-framework <https://github.com/tomchristie/django-rest-framework>`_'s
 permissioning system and `rest_condition <https://github.com/caxap/rest_condition>`_'s
 ability to compose simple requirements into more complex ones.
@@ -22,18 +14,17 @@ ability to compose simple requirements into more complex ones.
 Installation
 ------------
 
-Flask-Allows is available on `pypi <https://pypi.org/project/flask-allows/>`_ and
+Flask-Allows2 is available on `pypi <https://pypi.org/project/Flask-Allows2/>`_ and
 installable with::
 
-    pip install flask-allows
+    pip install Flask-Allows2
 
-Flask Allows supports 2.7, and 3.4+. Support for 3.3 was ended in the version
-0.3 release.
+Flask-Allows2 supports 3.12+.
 
 .. note::
 
-    If you are installing ``flask-allows`` outside of a virtual environment,
-    consider installing it with ``pip install --user flask-allows`` rather
+    If you are installing ``Flask-Allows2`` outside of a virtual environment,
+    consider installing it with ``pip install --user Flask-Allows2`` rather
     than using sudo or adminstrator privileges to avoid installing it into
     your system Python.
 
@@ -41,6 +32,6 @@ Flask Allows supports 2.7, and 3.4+. Support for 3.3 was ended in the version
 More Information
 ----------------
 
-- For more information, `please visit the documentation <https://flask-allows.readthedocs.io/en/latest/>`_.
-- Found a bug, have a question, or want to request a feature? Here is our `issue tracker <https://github.com/justanr/flask-allows/issues>`_.
-- Need the source code? Here is the `repository <https://github.com/justanr/flask-allows>`_
+- For more information, `please visit the documentation <https://flask-allows2.readthedocs.io/en/latest/>`_.
+- Found a bug, have a question, or want to request a feature? Here is our `issue tracker <https://github.com/flaskbb/flask-allows2/issues>`_.
+- Need the source code? Here is the `repository <https://github.com/flaskbb/flask-allows2>`_

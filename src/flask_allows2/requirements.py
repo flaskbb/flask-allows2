@@ -53,13 +53,13 @@ class ConditionalRequirement(Requirement):
     Used to combine requirements together in ways other than all-or-nothing,
     such as with an or-reducer (any requirement must be True)::
 
-        from flask_allows import Or
+        from flask_allows2 import Or
 
         requires(Or(user_is_admin, user_is_moderator))
 
     or negating a requirement::
 
-        from flask_allows import Not
+        from flask_allows2 import Not
 
         requires(Not(user_logged_in))
 

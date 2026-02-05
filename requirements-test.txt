@@ -1,3 +1,0 @@
--rrequirements.txt
--rrequirements-cov.txt
-pytest>=6.2.4

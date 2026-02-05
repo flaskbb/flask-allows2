@@ -10,7 +10,7 @@ difficult to manipulate after the fact. Fancy foot work with requirement
 factories can ease this some but at the cost of complexity, manual management
 and potentially tricky application or request scoped context locals.
 
-To address this, ``flask-allows`` provides a mechanism for overriding and adding
+To address this, ``Flask-Allows2`` provides a mechanism for overriding and adding
 additional requirements itself.
 
 
@@ -56,20 +56,20 @@ Disabling Requirements
 **********************
 
 Disabling requirements can be useful to temporarily allows a specific user
-access to certain areas of your application. ``flask-allows`` exposes an
+access to certain areas of your application. ``flask-allows2`` exposes an
 ``overrides`` attribute on the extension object, as well as providing a
 ``current_overrides`` context local and an
-:class:`~flask_allows.overrides.Override` class, each of these play a separate
+:class:`~flask_allows2.overrides.Override` class, each of these play a separate
 role in the process:
 
-- ``allows.overrides`` is the :class:`~flask_allows.overrides.OverrideManager`
+- ``allows.overrides`` is the :class:`~flask_allows2.overrides.OverrideManager`
   instance associated with the extension object. It is strongly recommended
   to use this instance rather than instantiating your own.
 
 - ``current_overrides`` is a context local that points towards the current
   override context.
 
-- :class:`~flask_allows.overrides.Override` is the representation of the
+- :class:`~flask_allows2.overrides.Override` is the representation of the
   override context.
 
 
@@ -83,16 +83,16 @@ role in the process:
 
 ``flask-allows`` automatically starts an override context at the beginning of
 a request so  we can immediately being overriding requirements by calling
-:meth:`~flask_allows.overrides.Override.add`::
+:meth:`~flask_allows2.overrides.Override.add`::
 
-    from flask_allows import current_overrides
+    from flask_allows2 import current_overrides
     from .app.requirements import is_admin
 
     current_overrides.add(is_admin)
 
 
 We can also remove a requirement from the override context with
-:meth:`~flask_allows.overrides.Override.remove`::
+:meth:`~flask_allows2.overrides.Override.remove`::
 
     current_overrides.remove(is_admin)
 
@@ -107,7 +107,7 @@ at least one requirement.
 
 
 It is possible to temporarily replace the current context with a new one with
-``OverrideManager``'s :meth:`~flask_allows.overrides.OverrideManager.override`
+``OverrideManager``'s :meth:`~flask_allows2.overrides.OverrideManager.override`
 method which acts as a context manager::
 
     with allows.overrides.override(Override(is_admin)):
@@ -145,14 +145,14 @@ Manually managing override contexts
 
 
 We can also manually manage overrides on a global scale by using the manager's
-:meth:`~flask_allows.overrides.OverrideManager.push` and
-:meth:`~flask_allows.overrides.OverrideManager.pop` methods. This can be useful
+:meth:`~flask_allows2.overrides.OverrideManager.push` and
+:meth:`~flask_allows2.overrides.OverrideManager.pop` methods. This can be useful
 when working outside the request-response cycle, such as in a CLI context or
 out-of-band task runner such as celery.
 
 .. danger::
 
-    :meth:`~flask_allows.overrides.OverrideManager.pop` checks that the popped
+    :meth:`~flask_allows2.overrides.OverrideManager.pop` checks that the popped
     context belongs to the manager instance that popped the context. If a
     separate manager instance pushed the last context or if a context was not
     active when ``pop`` was called, a ``RuntimeError`` is raised to signal this
@@ -185,14 +185,14 @@ to the context as well. To achieve this, ``flask-allows`` exposes an ``additiona
 attribute on the extension object, as well as a ``current_additions`` and an
 ``Additional`` class, each plays a similar role to their override counterparts:
 
-- ``allows.additional`` is the :class:`~flask_allows.additional.AdditionalManager`
+- ``allows.additional`` is the :class:`~flask_allows2.additional.AdditionalManager`
   instance associated with the extension object. It's strongly recommended to use
   this instance rather than instantiating your own.
 
 - ``current_additions`` is a context local that points towards the current
   additional context.
 
-- :class:`~flask_allows.additional.Additional` is the representation of the
+- :class:`~flask_allows2.additional.Additional` is the representation of the
   additional context.
 
 
@@ -203,11 +203,11 @@ attribute on the extension object, as well as a ``current_additions`` and an
     registers before and after request handlers to push and cleanup additional
     contexts.
 
-``flask-allows`` manages additional contexts in the same fashion as an override
+``Flask-Allows2`` manages additional contexts in the same fashion as an override
 context, automatically starting and ending the context in tune with the request
 cycle::
 
-    from flask_allows import current_additions
+    from flask_allows2 import current_additions
     from .myapp.requirements import is_admin
 
     current_additions.add(is_admin)
@@ -221,12 +221,12 @@ at least one requirement.
 
 It is also possible to temporarily replace the current additional context with
 a new one by using the ``AdditionalManager``'s
-:meth:`~flask_allows.additional.AdditionalManager.additional` method::
+:meth:`~flask_allows2.additional.AdditionalManager.additional` method::
 
     with allows.additional.additional(Additional(is_admin)):
         ...
 
-Just like with :class:`~flask_allows.overrides.OverrideManager` this method
+Just like with :class:`~flask_allows2.overrides.OverrideManager` this method
 will inject the new context into the block and can accept a ``use_parent``
 argument to combine the new context and the current context into one::
 
@@ -234,7 +234,7 @@ argument to combine the new context and the current context into one::
         assert added.is_added(is_admin)
 
 Additional objects can be checked for membership using either the
-:meth:`~flask_allows.additional.Additional.is_added` method or with ``in``::
+:meth:`~flask_allows2.additional.Additional.is_added` method or with ``in``::
 
     current_additions.add(is_admin)
     current_additions.is_added(is_admin)
@@ -252,21 +252,21 @@ Manually Managing Additional Contexts
 *************************************
 
 Additional contexts can also be managed manually at the global level with the
-:meth:`~flask_allows.additional.AdditionalManager.push` and
-:meth:`~flask_allows.additional.AdditionalManager.pop` methods. This can be
+:meth:`~flask_allows2.additional.AdditionalManager.push` and
+:meth:`~flask_allows2.additional.AdditionalManager.pop` methods. This can be
 useful when working outside the request cycle such as in an out of band task
 worker such as celery.
 
 .. danger::
 
-    :meth:`~flask_allows.additional.AdditionalManager.pop` checks that the popped
+    :meth:`~flask_allows2.additional.AdditionalManager.pop` checks that the popped
     context belongs to the manager instance that popped the context. If a
     separate manager instance pushed the last context or if a context was not
     active when ``pop`` was called, a ``RuntimeError`` is raised to signal this
     error.
 
 To being managing the context, we must first call the manager's ``push`` method
-with an :class:`~flask_allows.additional.Additional` instance::
+with an :class:`~flask_allows2.additional.Additional` instance::
 
     allows.overrides.push(Additional(is_admin))
 

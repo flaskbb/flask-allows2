@@ -5,7 +5,7 @@ Quickstart
 ##########
 
 This guide will walk you through the basics of creating and using requirements
-with Flask-Allows.
+with Flask-Allows2.
 
 *****************
 Setting Up Allows
@@ -14,7 +14,7 @@ Setting Up Allows
 Before we can set up requirements and guard routes, we must first setup the
 extension object::
 
-    from flask_allows import Allows
+    from flask_allows2 import Allows
     from flask import Flask
 
     app = Flask(__name__)
@@ -24,7 +24,7 @@ extension object::
 This is all that is needed to register the extension object against a Flask
 application, however we must also register a way to load a user object to
 check against requirements. Managing user sessions is outside the scope of
-Flask-Allows, however for the sake of this tutorial we'll assume that you are
+Flask-Allows2, however for the sake of this tutorial we'll assume that you are
 using ``flask_login``::
 
     from flask_login import current_user
@@ -39,10 +39,10 @@ An identity_loader can also being provided at object instantiation::
 Creating Requirements
 *********************
 
-Now that we have a configured :class:`~flask_allows.allows.Allows` instance
+Now that we have a configured :class:`~flask_allows2.allows.Allows` instance
 registered against the application, let's create some custom requirements.
 Requirements can either be a child of
-:class:`~flask_allows.requirements.Requirement`::
+:class:`~flask_allows2.requirements.Requirement`::
 
     class HasPermission(Requirement):
         def __init__(self, permission):
@@ -76,9 +76,9 @@ Guarding Routes
 
 In order to guard route handlers, two decorators are provided:
 
-- The :meth:`~flask_allows.allows.Allows.requires` method on the configured
+- The :meth:`~flask_allows2.allows.Allows.requires` method on the configured
   Allows instance
-- The standalone :meth:`~flask_allows.views.requires`
+- The standalone :meth:`~flask_allows2.views.requires`
 
 Both accept the same arguments the only difference is where each is
 imported from. We'll use the standalone decorator in this tutorial.
@@ -86,7 +86,7 @@ imported from. We'll use the standalone decorator in this tutorial.
 Applying a requirement is done by passing the desired requirements into the
 decorator::
 
-    from flask_allows import requires
+    from flask_allows2 import requires
 
     @app.route('/admin')
     @requires(is_admin)
@@ -151,11 +151,11 @@ Guarding entire application or blueprint
 
 If you find yourself applying the same set of requirements to every route in
 an applicationr or blueprint, you can instead guard all routes  with that set of
-requirements instead using :func:`~flask_allows.views.guard_entire`::
+requirements instead using :func:`~flask_allows2.views.guard_entire`::
 
 
     from flask import Blueprint
-    from flask_allows import guard_entire
+    from flask_allows2 import guard_entire
 
     from myapp.requirements import is_admin
 
@@ -210,7 +210,7 @@ is registered with a dynamic component such as a username::
 
 If you need to exempt a route handler inside the blueprint from these
 permissions, that is possible as well by using
-:func:`~flask_allows.views.exempt_from_requirements`::
+:func:`~flask_allows2.views.exempt_from_requirements`::
 
     @admin_area.route('/unpermissioned')
     @exempt_from_requirements

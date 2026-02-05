@@ -1,7 +1,7 @@
 import pytest
 from werkzeug.exceptions import Forbidden
 
-from flask_allows import Allows, Permission
+from flask_allows2 import Allows, Permission
 
 
 def test_Permission_provide_ident(app, member, ismember):
@@ -66,7 +66,6 @@ def test_Permission_on_fail(app, member, never):
     p = Permission(never, on_fail=on_fail)
 
     with app.app_context():
-
         with pytest.raises(Forbidden):
             with p:
                 pass
