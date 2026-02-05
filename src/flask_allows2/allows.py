@@ -231,7 +231,7 @@ def _get_allows(app=None, silent=False):
         return None
 
     if "allows" not in app.extensions:
-        raise RuntimeError("Flask-Allows not configured against current app")
+        raise RuntimeError("Flask-Allows2 not configured against current app")
 
     return app.extensions["allows"]
 
