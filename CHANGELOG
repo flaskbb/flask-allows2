@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 1.1.0 (2026-02-15)
+--------------------------
+
+* Removed support for request in permissions/requirements
+* Added some types (new to this stuff so any input is appreciated)
+
+
 Version 1.0.0 (2026-02-05)
 --------------------------
 

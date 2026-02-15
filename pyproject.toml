@@ -1,6 +1,6 @@
 [project]
 name = "Flask-Allows2"
-version = "1.0.0"
+version = "1.1.0"
 description = "Impose authorization requirements on Flask routes"
 readme = "README.rst"
 license = "MIT"
