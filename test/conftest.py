@@ -28,24 +28,24 @@ class SpyRequirement(Requirement):
 
 class AlwaysRequirement(SpyRequirement):
     def fulfill(self, user):
-        super(AlwaysRequirement, self).fulfill(user)
+        super().fulfill(user)
         return True
 
 
 class NeverRequirement(SpyRequirement):
     def fulfill(self, user):
-        super(NeverRequirement, self).fulfill(user)
+        super().fulfill(user)
         return False
 
 
 class CountingRequirement(AlwaysRequirement):
     def __init__(self):
-        super(CountingRequirement, self).__init__()
+        super().__init__()
         self.count = 0
 
     def fulfill(self, user):
         self.count += 1
-        return super(CountingRequirement, self).fulfill(user)
+        return super().fulfill(user)
 
 
 user = namedtuple("User", ["name", "is_authed", "permlevel"])
@@ -109,22 +109,22 @@ def moderator(authlevels):
 
 @pytest.fixture(scope="session")
 def atleastmod(authlevels):
-    return lambda u, r: u.permlevel >= authlevels.moderator
+    return lambda u: u.permlevel >= authlevels.moderator
 
 
 @pytest.fixture(scope="session")
 def adminrequired(authlevels):
-    return lambda u, r: u.permlevel == authlevels.admin
+    return lambda u: u.permlevel == authlevels.admin
 
 
 @pytest.fixture(scope="session")
 def isauthed(authlevels):
-    return lambda u, r: u.is_authed
+    return lambda u: u.is_authed
 
 
 @pytest.fixture(scope="session")
 def ismember(authlevels):
-    return lambda u, r: u.permlevel >= authlevels.member
+    return lambda u: u.permlevel >= authlevels.member
 
 
 @pytest.fixture(scope="session")

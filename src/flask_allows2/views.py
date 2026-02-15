@@ -1,13 +1,21 @@
 from functools import wraps
+from typing import TYPE_CHECKING, Any
 
 from flask import current_app, request
 
 from .allows import _get_allows
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from .requirements import Requirement
+
 __all__ = ("requires", "exempt_from_requirements", "guard_entire")
 
 
 def _get_executing_handler():
+    if not request.endpoint:
+        return None
     return current_app.view_functions[request.endpoint]
 
 
@@ -18,7 +26,9 @@ def _should_run_requirements():
     return not getattr(_get_executing_handler(), "__allows_exempt__", False)
 
 
-def requires(*requirements, **opts):
+def requires(
+    *requirements: Callable[[type["Requirement"]], bool] | Callable[[Any], bool], **opts
+):
     """
     Standalone decorator to apply requirements to routes, either function
     handlers or class based views::
@@ -53,7 +63,7 @@ def requires(*requirements, **opts):
                 on_fail=on_fail,
                 throws=throws,
                 f_args=args,
-                f_kwargs=kwargs,
+                f_kwargs=kwargs,  # type: ignore
             )
 
             # authorization failed
@@ -196,7 +206,7 @@ def guard_entire(requirements, identity=None, throws=None, on_fail=None):
                 identity=identity,
                 on_fail=on_fail,
                 throws=throws,
-                f_kwargs=request.view_args,
+                f_kwargs=request.view_args,  # type: ignore
             )
         return None
 

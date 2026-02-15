@@ -11,7 +11,6 @@ from flask_allows2.requirements import (
     Not,
     Or,
     Requirement,
-    wants_request,
 )
 
 
@@ -198,7 +197,6 @@ def test_wants_request_stops_incorrect_useronly_flow(member):
 
     # incorrect flow happens here, only member is passed
     assert not allows.fulfill([my_requirement], member)
-    assert allows.fulfill([wants_request(my_requirement)], member)
 
 
 def test_conditional_skips_overridden_requirements(member, never, always):
@@ -223,24 +221,3 @@ def test_conditional_skips_overridden_requirements_even_if_nested(
     assert reqs.fulfill(member)
 
     manager.pop()
-
-
-def test_wants_request_works_on_classes(request, member):
-    allows = Allows(app=None, identity_loader=lambda: member)
-    SENTINEL = object()
-
-    @wants_request
-    class OldKindOfRequirement(Requirement):
-        def fulfill(self, user, request=SENTINEL):
-            return request is not SENTINEL
-
-    assert "OldKindOfRequirement" == OldKindOfRequirement.__name__
-    assert allows.fulfill([OldKindOfRequirement()], member)
-
-
-def test_wants_request_errors_on_not_function_or_requirement():
-    assert wants_request(lambda u, r: True)
-    assert wants_request(type("Test", (Requirement,), {}))
-
-    with pytest.raises(TypeError):
-        wants_request(type("MoreTest", (object,), {}))

@@ -9,7 +9,6 @@ from .requirements import (
     Not,
     Or,
     Requirement,
-    wants_request,
 )
 from .views import exempt_from_requirements, guard_entire, requires
 
@@ -32,7 +31,6 @@ __all__ = (
     "Permission",
     "Requirement",
     "requires",
-    "wants_request",
 )
 
 __version__ = "1.0.0"

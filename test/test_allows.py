@@ -7,24 +7,6 @@ from flask_allows2.additional import Additional, current_additions
 from flask_allows2.overrides import Override, current_overrides
 
 
-def test_warns_about_request_deprecation_with_old_style_requirement(member):
-    import warnings
-
-    allows = Allows(identity_loader=lambda: member)
-    req = lambda u, p: True  # noqa: E731
-    repred = repr(req)
-
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", DeprecationWarning)
-        allows.fulfill([req])
-        warnings.simplefilter("default", DeprecationWarning)
-
-    assert len(w) == 1
-    assert issubclass(w[0].category, DeprecationWarning)
-    assert str(w[0].message).startswith(repred)
-    assert "Passing request to requirements is now deprecated" in str(w[0].message)
-
-
 def test_Allows_defaults():
     allows = Allows()
     assert allows._identity_loader is None and allows.throws is Forbidden
@@ -171,10 +153,7 @@ def test_allows_can_call_requirements_with_old_and_new_style_arguments(member):
     def new_style(user):
         return True
 
-    def old_style(user, request):
-        return True
-
-    assert allows.fulfill([new_style, old_style])
+    assert allows.fulfill([new_style])
 
 
 def test_fulfills_skips_overridden_requirements(member, never):

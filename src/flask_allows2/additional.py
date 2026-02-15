@@ -3,7 +3,9 @@ from functools import wraps
 
 from werkzeug.local import LocalProxy, LocalStack
 
-_additional_ctx_stack = LocalStack()
+_additional_ctx_stack: LocalStack[tuple["AdditionalManager", "Additional"]] = (
+    LocalStack()
+)
 
 __all__ = ("current_additions", "Additional", "AdditionalManager")
 
@@ -29,7 +31,7 @@ def _isinstance(f):
     return check
 
 
-class Additional(object):
+class Additional:
     """
     Container object that allows to run extra requirements on checks. These
     additional requirements will be run at most once per check and will
@@ -126,17 +128,17 @@ class Additional(object):
     __nonzero__ = __bool__
 
     def __repr__(self):
-        return "Additional({!r})".format(self._requirements)
+        return f"Additional({self._requirements!r})"
 
 
-class AdditionalManager(object):
+class AdditionalManager:
     """
     Used to manage the process of adding and removing additional requirements
     to be run. This class shouldn't be used directly, instead use
     ``allows.additional`` to access these controls.
     """
 
-    def push(self, additional, use_parent=False):
+    def push(self, additional: "Additional", use_parent: bool = False):
         """
         Binds an additional to the current context, optionally use the
         current additionals in conjunction with this additional
@@ -161,7 +163,7 @@ class AdditionalManager(object):
         rv = _additional_ctx_stack.pop()
         if rv is None or rv[0] is not self:
             raise RuntimeError(
-                "popped wrong additional context ({} instead of {})".format(rv, self)
+                f"popped wrong additional context ({rv} instead of {self})"
             )
 
     @property
@@ -170,7 +172,9 @@ class AdditionalManager(object):
         Returns the current additional context if set otherwise None
         """
         try:
-            return _additional_ctx_stack.top[1]
+            return (
+                None if not _additional_ctx_stack.top else _additional_ctx_stack.top[1]
+            )
         except TypeError:
             return None
 

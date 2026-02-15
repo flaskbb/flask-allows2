@@ -3,7 +3,7 @@ from functools import wraps
 
 from werkzeug.local import LocalProxy, LocalStack
 
-_override_ctx_stack = LocalStack()
+_override_ctx_stack: LocalStack[tuple["OverrideManager", "Override"]] = LocalStack()
 
 __all__ = ("current_overrides", "Override", "OverrideManager")
 
@@ -29,7 +29,7 @@ def _isinstance(f):
     return check
 
 
-class Override(object):
+class Override:
     """
     Container object that allows selectively disabling requirements.
 
@@ -128,10 +128,10 @@ class Override(object):
     __nonzero__ = __bool__
 
     def __repr__(self):
-        return "Override({!r})".format(self._requirements)
+        return f"Override({self._requirements!r})"
 
 
-class OverrideManager(object):
+class OverrideManager:
     """
     Used to manage the process of overriding and removing overrides.
     This class shouldn't be used directly, instead use ``allows.overrides``
@@ -163,7 +163,7 @@ class OverrideManager(object):
         rv = _override_ctx_stack.pop()
         if rv is None or rv[0] is not self:
             raise RuntimeError(
-                "popped wrong override context ({} instead of {})".format(rv, self)
+                f"popped wrong override context ({rv} instead of {self})"
             )
 
     @property

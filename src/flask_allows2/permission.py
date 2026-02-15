@@ -1,9 +1,16 @@
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from .requirements import Requirement
+
 from .allows import _get_allows
 
 __all__ = ("Permission",)
 
 
-class Permission(object):
+class Permission:
     """
     Used to check requirements as a boolean or context manager. When used as a
     boolean, it only runs the requirements and returns the raw boolean result::
@@ -44,7 +51,11 @@ class Permission(object):
 
     """
 
-    def __init__(self, *requirements, **opts):
+    def __init__(
+        self,
+        *requirements: Callable[[type["Requirement"]], bool] | Callable[[Any], bool],
+        **opts,
+    ):
         self.requirements = requirements
         self.throws = opts.get("throws")
         self.identity = opts.get("identity")

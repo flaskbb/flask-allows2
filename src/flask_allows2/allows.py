@@ -1,18 +1,23 @@
-import warnings
 from functools import wraps
 from itertools import chain
+from typing import TYPE_CHECKING, Any, Literal, Mapping, overload
 
-from flask import current_app, request
+from flask import Flask, current_app
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import Forbidden
 
 from .additional import Additional, AdditionalManager
 from .overrides import Override, OverrideManager
 
-__all__ = "Allows"
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from .requirements import Requirement
+
+__all__ = ["Allows"]
 
 
-class Allows(object):
+class Allows:
     """
     The Flask-Allows extension object used to control defaults and drive
     behavior.
@@ -25,7 +30,13 @@ class Allows(object):
         authorization fails.
     """
 
-    def __init__(self, app=None, identity_loader=None, throws=Forbidden, on_fail=None):
+    def __init__(
+        self,
+        app: Flask | None = None,
+        identity_loader: Callable[[], Any] | None = None,
+        throws: type[Exception] = Forbidden,
+        on_fail: Callable[..., Any] | Any | None = None,
+    ):
         self._identity_loader = identity_loader
         self.throws = throws
 
@@ -36,7 +47,7 @@ class Allows(object):
         if app:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app: Flask):
         """
         Initializes the Flask-Allows object against the provided application
         """
@@ -45,17 +56,21 @@ class Allows(object):
         app.extensions["allows"] = self
 
         @app.before_request
-        def start_context(*a, **k):
+        def start_context(*a: Any, **k: Any):
             self.overrides.push(Override())
             self.additional.push(Additional())
 
         @app.after_request
-        def cleanup(response):
+        def cleanup(response: Any):
             self.clear_all_overrides()
             self.clear_all_additional()
             return response
 
-    def requires(self, *requirements, **opts):
+    def requires(
+        self,
+        *requirements: Callable[[type["Requirement"]], bool] | Callable[[Any], bool],
+        **opts: Any,
+    ):
         """
         Decorator to enforce requirements on routes
 
@@ -72,7 +87,7 @@ class Allows(object):
         on_fail = opts.get("on_fail")
         throws = opts.get("throws")
 
-        def decorator(f):
+        def decorator(f: Callable[..., Any]):
             @wraps(f)
             def allower(*args, **kwargs):
 
@@ -82,7 +97,7 @@ class Allows(object):
                     on_fail=on_fail,
                     throws=throws,
                     f_args=args,
-                    f_kwargs=kwargs,
+                    f_kwargs=kwargs,  # type: ignore
                 )
 
                 # authorization failed
@@ -95,7 +110,7 @@ class Allows(object):
 
         return decorator
 
-    def identity_loader(self, f):
+    def identity_loader(self, f: Callable[[], Any]):
         """
         Used to provide an identity loader after initialization of the
         extension.
@@ -119,7 +134,13 @@ class Allows(object):
         self._identity_loader = f
         return f
 
-    def fulfill(self, requirements, identity=None):
+    def fulfill(
+        self,
+        requirements: Sequence[
+            Callable[[type["Requirement"]], bool] | Callable[[Any], bool]
+        ],
+        identity: Any | None = None,
+    ):
         """
         Checks that the provided or current identity meets each requirement
         passed to this method.
@@ -136,7 +157,8 @@ class Allows(object):
         :param identity: Optional. Identity to use in place of the current
             identity.
         """
-        identity = identity or self._identity_loader()
+        if not identity and self._identity_loader is not None:
+            identity = self._identity_loader()
 
         if self.additional.current:
             all_requirements = chain(iter(self.additional.current), requirements)
@@ -180,13 +202,15 @@ class Allows(object):
 
     def run(
         self,
-        requirements,
-        identity=None,
-        throws=None,
-        on_fail=None,
-        f_args=(),
-        f_kwargs=ImmutableDict(),  # noqa: B008
-        use_on_fail_return=True,
+        requirements: Sequence[
+            Callable[[type["Requirement"]], bool] | Callable[[Any], bool]
+        ],
+        identity: Any | None = None,
+        throws: type[Exception] | None = None,
+        on_fail: Callable[..., Any] | Any | None = None,
+        f_args: Sequence[Any] = (),
+        f_kwargs: Mapping[str, Any] = ImmutableDict(),
+        use_on_fail_return: bool = True,
     ):
         """
         Used to preform a full run of the requirements and the options given,
@@ -217,7 +241,15 @@ class Allows(object):
             raise throws
 
 
-def _get_allows(app=None, silent=False):
+@overload
+def _get_allows() -> Allows: ...
+
+
+@overload
+def _get_allows(app: Flask | None, silent: Literal[True]) -> Allows | None: ...
+
+
+def _get_allows(app: Flask | None = None, silent: bool = False) -> Allows | None:
     """Gets the application-specific Allows data.
 
     :param app: The Flask application. Defaults to the current app.
@@ -236,21 +268,11 @@ def _get_allows(app=None, silent=False):
     return app.extensions["allows"]
 
 
-def _make_callable(func_or_value):
+def _make_callable(func_or_value: Callable[..., Any] | Any):
     if not callable(func_or_value):
         return lambda *a, **k: func_or_value
     return func_or_value
 
 
 def _call_requirement(requirement, user):
-    try:
-        return requirement(user)
-    except TypeError:
-        warnings.warn(
-            "{!r}: Passing request to requirements is now deprecated"
-            " and will be removed in 1.0".format(requirement),
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        return requirement(user, request)
+    return requirement(user)

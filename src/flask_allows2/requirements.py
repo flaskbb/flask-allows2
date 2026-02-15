@@ -1,18 +1,16 @@
 import operator
 from abc import ABCMeta, abstractmethod
-from functools import wraps
-from inspect import isclass
-from types import FunctionType
-
-from flask import request
+from typing import TYPE_CHECKING, Any
 
 from .allows import _call_requirement
 from .overrides import current_overrides
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 __all__ = (
     "Requirement",
     "ConditionalRequirement",
-    "wants_request",
     "C",
     "Or",
     "And",
@@ -28,7 +26,7 @@ class Requirement(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def fulfill(self, user):
+    def fulfill(self, user) -> bool:
         """
         Abstract method called to verify the requirement against the current
         user and request.
@@ -45,7 +43,7 @@ class Requirement(metaclass=ABCMeta):
         return _call_requirement(self.fulfill, user)
 
     def __repr__(self):
-        return "<{}()>".format(self.__class__.__name__)
+        return f"<{self.__class__.__name__}()>"
 
 
 class ConditionalRequirement(Requirement):
@@ -86,14 +84,16 @@ class ConditionalRequirement(Requirement):
         returns False if the user is logged in)
     """
 
-    def __init__(self, *requirements, **kwargs):
+    def __init__(
+        self, *requirements: Callable[[type["Requirement"]], bool], **kwargs: Any
+    ):
         self.requirements = requirements
         self.op = kwargs.get("op", operator.and_)
         self.until = kwargs.get("until")
         self.negated = kwargs.get("negated")
 
     @classmethod
-    def And(cls, *requirements):
+    def And(cls, *requirements: Callable[[type["Requirement"]], bool]):
         """
         Short cut helper to construct a combinator that uses
         :meth:`operator.and_` to reduce requirement results and stops
@@ -104,7 +104,7 @@ class ConditionalRequirement(Requirement):
         return cls(*requirements, op=operator.and_, until=False)
 
     @classmethod
-    def Or(cls, *requirements):
+    def Or(cls, *requirements: Callable[[type["Requirement"]], bool]):
         """
         Short cut helper to construct a combinator that uses
         :meth:`operator.or_` to reduce requirement results and stops evaluating
@@ -115,7 +115,7 @@ class ConditionalRequirement(Requirement):
         return cls(*requirements, op=operator.or_, until=True)
 
     @classmethod
-    def Not(cls, *requirements):
+    def Not(cls, *requirements: Callable[[type["Requirement"]], bool]):
         """
         Shortcut helper to negate a requirement or requirements.
 
@@ -123,7 +123,7 @@ class ConditionalRequirement(Requirement):
         """
         return cls(*requirements, negated=True)
 
-    def fulfill(self, user):
+    def fulfill(self, user: Any):
         reduced = None
 
         requirements = self.requirements
@@ -148,10 +148,10 @@ class ConditionalRequirement(Requirement):
 
         return True
 
-    def __and__(self, require):
+    def __and__(self, require: Callable[[type["Requirement"]], bool]):
         return self.And(self, require)
 
-    def __or__(self, require):
+    def __or__(self, require: Callable[[type["Requirement"]], bool]):
         return self.Or(self, require)
 
     def __invert__(self):
@@ -164,16 +164,14 @@ class ConditionalRequirement(Requirement):
             value = getattr(self, name)
             if not value:
                 continue
-            additional.append("{0}={1!r}".format(name, value))
+            additional.append(f"{name}={value!r}")
 
         if additional:
-            additional = " {}".format(", ".join(additional))
+            additional = f" {', '.join(additional)}"
         else:
             additional = ""
 
-        return "<{0} requirements={1!r}{2}>".format(
-            self.__class__.__name__, self.requirements, additional
-        )
+        return f"<{self.__class__.__name__} requirements={self.requirements!r}{additional}>"
 
     def __eq__(self, other):
         return (
@@ -194,50 +192,3 @@ class ConditionalRequirement(Requirement):
     ConditionalRequirement.Or,
     ConditionalRequirement.Not,
 )
-
-
-def wants_request(f_or_cls):
-    """
-    Helper decorator for transitioning to user-only requirements, this aids
-    in situations where the request may be marked optional and causes an
-    incorrect flow into user-only requirements.
-
-    This decorator causes the requirement to look like a user-only requirement
-    but passes the current request context internally to the requirement. It
-    can be applied to a function requirement or a subclass of Requirement.
-
-    See: :issue:`20,27`
-    """
-
-    if isclass(f_or_cls) and issubclass(f_or_cls, Requirement):
-        return _class_wants_request(f_or_cls)
-
-    if isinstance(f_or_cls, FunctionType):
-        return _func_wants_request(f_or_cls)
-
-    raise TypeError(
-        "Expected a function or subclass of Requirement. Got {}".format(f_or_cls)
-    )
-
-
-def _func_wants_request(f):
-    @wraps(f)
-    def wrapper(user):
-        return f(user, request)
-
-    return wrapper
-
-
-class _OldStyleRequirement(Requirement):
-    """
-    Used to provide an adaptation bridge to requirements that want the user
-    and request provided to fulfill rather than just user.
-    """
-
-    def __call__(self, user):
-        return self.fulfill(user, request)
-
-
-def _class_wants_request(cls):
-    name = cls.__name__
-    return type(name, (_OldStyleRequirement, cls), {})

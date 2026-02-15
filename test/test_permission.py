@@ -8,7 +8,6 @@ def test_Permission_provide_ident(app, member, ismember):
     Allows(app=app)
 
     p = Permission(ismember, identity=member)
-
     assert p.identity is member
 
 
