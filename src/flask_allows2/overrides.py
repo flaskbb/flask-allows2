@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from functools import wraps
 
-from werkzeug.local import LocalProxy, LocalStack
+from werkzeug.local import LocalProxy
+from werkzeug.local import LocalStack
 
 _override_ctx_stack: LocalStack[tuple["OverrideManager", "Override"]] = LocalStack()
 
@@ -9,7 +10,7 @@ __all__ = ("current_overrides", "Override", "OverrideManager")
 
 
 @LocalProxy
-def current_overrides():
+def current_overrides() -> "Override | None":
     """
     Proxy to the currently pushed override context.
     """
@@ -172,7 +173,7 @@ class OverrideManager:
         Returns the current override context if set otherwise None
         """
         try:
-            return _override_ctx_stack.top[1]
+            return _override_ctx_stack.top[1]  # type: ignore
         except TypeError:
             return None
 

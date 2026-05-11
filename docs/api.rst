@@ -48,4 +48,3 @@ Utilities
 .. autofunction:: flask_allows2.views.requires
 .. autofunction:: flask_allows2.views.exempt_from_requirements
 .. autofunction:: flask_allows2.views.guard_entire
-.. autofunction:: flask_allows2.requirements.wants_request

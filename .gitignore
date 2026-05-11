@@ -68,4 +68,6 @@ target/
 Session.vim
 .netrwhist
 *~
-
+.pytest_cache
+.venv
+.ruff_cache

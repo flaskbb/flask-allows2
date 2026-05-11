@@ -1,17 +1,24 @@
+from collections.abc import Callable
+from collections.abc import Mapping
+from collections.abc import Sequence
 from functools import wraps
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Literal, Mapping, overload
+from typing import Any
+from typing import Literal
+from typing import overload
+from typing import TYPE_CHECKING
 
-from flask import Flask, current_app
+from flask import current_app
+from flask import Flask
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import Forbidden
 
-from .additional import Additional, AdditionalManager
-from .overrides import Override, OverrideManager
+from .additional import Additional
+from .additional import AdditionalManager
+from .overrides import Override
+from .overrides import OverrideManager
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
-
     from .requirements import Requirement
 
 __all__ = ["Allows"]
@@ -90,14 +97,13 @@ class Allows:
         def decorator(f: Callable[..., Any]):
             @wraps(f)
             def allower(*args, **kwargs):
-
                 result = self.run(
                     requirements,
                     identity=identity,
                     on_fail=on_fail,
                     throws=throws,
                     f_args=args,
-                    f_kwargs=kwargs,  # type: ignore
+                    f_kwargs=kwargs,
                 )
 
                 # authorization failed
@@ -161,14 +167,14 @@ class Allows:
             identity = self._identity_loader()
 
         if self.additional.current:
-            all_requirements = chain(iter(self.additional.current), requirements)
+            all_requirements = chain(iter(self.additional.current), requirements)  # type: ignore
         else:
-            all_requirements = iter(requirements)
+            all_requirements = iter(requirements)  # type: ignore
 
         if self.overrides.current is not None:
             all_requirements = (
                 r for r in all_requirements if r not in self.overrides.current
-            )
+            )  # type: ignore
 
         return all(_call_requirement(r, identity) for r in all_requirements)
 

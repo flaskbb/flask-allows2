@@ -1,7 +1,8 @@
 import pytest
 from werkzeug.exceptions import Forbidden
 
-from flask_allows2 import Allows, Permission
+from flask_allows2 import Allows
+from flask_allows2 import Permission
 
 
 def test_Permission_provide_ident(app, member, ismember):

@@ -3,15 +3,14 @@ import operator
 import pytest
 
 from flask_allows2.allows import Allows
-from flask_allows2.overrides import Override, OverrideManager
-from flask_allows2.requirements import (
-    And,
-    C,
-    ConditionalRequirement,
-    Not,
-    Or,
-    Requirement,
-)
+from flask_allows2.overrides import Override
+from flask_allows2.overrides import OverrideManager
+from flask_allows2.requirements import And
+from flask_allows2.requirements import C
+from flask_allows2.requirements import ConditionalRequirement
+from flask_allows2.requirements import Not
+from flask_allows2.requirements import Or
+from flask_allows2.requirements import Requirement
 
 
 def test_cant_create_Requirement():

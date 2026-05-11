@@ -1,12 +1,11 @@
 import operator
-from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any
+from abc import ABCMeta
+from abc import abstractmethod
+from collections.abc import Callable
+from typing import Any
 
 from .allows import _call_requirement
 from .overrides import current_overrides
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
 __all__ = (
     "Requirement",
@@ -130,7 +129,7 @@ class ConditionalRequirement(Requirement):
 
         # can't use is because is a proxy
         if current_overrides != None:  # noqa: E711
-            requirements = (r for r in requirements if r not in current_overrides)
+            requirements = tuple(r for r in requirements if r not in current_overrides)
 
         for r in requirements:
             result = _call_requirement(r, user)
@@ -171,7 +170,7 @@ class ConditionalRequirement(Requirement):
         else:
             additional = ""
 
-        return f"<{self.__class__.__name__} requirements={self.requirements!r}{additional}>"
+        return f"<{self.__class__.__name__} requirements={self.requirements!r}{additional}>"  # noqa: E501
 
     def __eq__(self, other):
         return (

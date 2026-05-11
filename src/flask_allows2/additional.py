@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from functools import wraps
 
-from werkzeug.local import LocalProxy, LocalStack
+from werkzeug.local import LocalProxy
+from werkzeug.local import LocalStack
 
 _additional_ctx_stack: LocalStack[tuple["AdditionalManager", "Additional"]] = (
     LocalStack()

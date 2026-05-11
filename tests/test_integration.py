@@ -2,23 +2,25 @@ import json
 import operator
 
 import pytest
-from flask import Blueprint, Flask, g, jsonify, request
+from flask import Blueprint
+from flask import Flask
+from flask import g
+from flask import jsonify
+from flask import request
 from flask.views import MethodView
 
-from flask_allows2 import (
-    Additional,
-    Allows,
-    And,
-    C,
-    Not,
-    Or,
-    Override,
-    Permission,
-    Requirement,
-    exempt_from_requirements,
-    guard_entire,
-    requires,
-)
+from flask_allows2 import Additional
+from flask_allows2 import Allows
+from flask_allows2 import And
+from flask_allows2 import C
+from flask_allows2 import exempt_from_requirements
+from flask_allows2 import guard_entire
+from flask_allows2 import Not
+from flask_allows2 import Or
+from flask_allows2 import Override
+from flask_allows2 import Permission
+from flask_allows2 import Requirement
+from flask_allows2 import requires
 from flask_allows2.additional import _additional_ctx_stack
 from flask_allows2.overrides import _override_ctx_stack
 
@@ -28,7 +30,7 @@ from flask_allows2.overrides import _override_ctx_stack
 # THIS IS WHERE THE TESTS BEGIN
 
 
-class User(object):
+class User:
     def __init__(self, username, userlevel, *permissions):
         self.username = username
         self.permissions = frozenset(permissions)
@@ -38,9 +40,7 @@ class User(object):
         return permission in self.permissions
 
     def __repr__(self):
-        return "User({}, {}, {!r})".format(
-            self.username, self.userlevel, self.permissions
-        )
+        return f"User({self.username}, {self.userlevel}, {self.permissions!r})"
 
 
 class AuthLevels:
@@ -115,7 +115,7 @@ class HasPermission(Requirement):
         return isinstance(other, HasPermission) and self.name == other.name
 
     def __repr__(self):
-        return "HasPermission({})".format(self.name)
+        return f"HasPermission({self.name})"
 
 
 class HasLevel(Requirement):
@@ -132,7 +132,7 @@ class HasLevel(Requirement):
         return isinstance(other, HasLevel) and self.userlevel == other.userlevel
 
     def __repr__(self):
-        return "HasLevel({})".format(self.userlevel)
+        return f"HasLevel({self.userlevel})"
 
 
 @app.route("/")

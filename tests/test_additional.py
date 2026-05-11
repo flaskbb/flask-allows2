@@ -1,11 +1,9 @@
 import pytest
 
-from flask_allows2.additional import (
-    Additional,
-    AdditionalManager,
-    _additional_ctx_stack,
-    current_additions,
-)
+from flask_allows2.additional import _additional_ctx_stack
+from flask_allows2.additional import Additional
+from flask_allows2.additional import AdditionalManager
+from flask_allows2.additional import current_additions
 from flask_allows2.requirements import Requirement
 
 
@@ -33,7 +31,7 @@ class AClassRequirement(Requirement):
         )
 
 
-class TestCurrentAdditional(object):
+class TestCurrentAdditional:
     def test_current_additions_with_no_context_returns_None(self):
         assert current_additions == None  # noqa: E711
 
@@ -59,7 +57,7 @@ class TestCurrentAdditional(object):
         manager.pop()
 
 
-class TestAdditional(object):
+class TestAdditional:
     def test_shows_if_requirement_is_added(self):
         additional = Additional(some_requirement)
         assert additional.is_added(some_requirement)
@@ -102,7 +100,7 @@ class TestAdditional(object):
         assert some_requirement not in additional
 
 
-class TestAdditionalManager(object):
+class TestAdditionalManager:
     def test_additional_manager_populates_additionals_local(self):
         manager = AdditionalManager()
         additional = Additional(some_requirement)

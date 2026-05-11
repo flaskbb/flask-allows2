@@ -3,8 +3,10 @@ from flask import Response
 from werkzeug.exceptions import Forbidden
 
 from flask_allows2 import Allows
-from flask_allows2.additional import Additional, current_additions
-from flask_allows2.overrides import Override, current_overrides
+from flask_allows2.additional import Additional
+from flask_allows2.additional import current_additions
+from flask_allows2.overrides import current_overrides
+from flask_allows2.overrides import Override
 
 
 def test_Allows_defaults():

@@ -27,20 +27,46 @@ dependencies = [
     "Flask>=2.0.0",
 ]
 
-[dependency-groups]
-dev = [
-    "sphinx_rtd_theme",
-    "sphinx",
-    "sphinx-tabs",
-    "sphinx-issues",
-    "coverage",
-    "pytest",
-]
-
 [project.urls]
 Documentation = "https://flask-allows2.readthedocs.io/en/latest/"
 Source = "https://github.com/flaskbb/flask-allows2"
 Issues = "https://github.com/flaskbb/flask-allows2/issues"
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "tox>=4.39",
+    "tox-uv",
+    {include-group = "pre-commit"},
+    {include-group = "docs"},
+    {include-group = "tests"},
+    {include-group = "typing"},
+]
+pre-commit = [
+    "pre-commit",
+    "pre-commit-uv",
+]
+docs = [
+    "pallets-sphinx-themes",
+    "sphinx",
+    "sphinx-issues",
+    "sphinx-tabs",
+    "sphinx-intl>=2.3.1",
+    "sphinxcontrib-log-cabinet",
+]
+tests = [
+    "flask[async]",
+    "pytest",
+    "pytest-cov",
+]
+typing = [
+    "mypy",
+    "pyright",
+    "pytest",
+]
+gha-update = [
+    "gha-update ; python_full_version >= '3.12'",
+]
 
 [build-system]
 requires = ["flit_core>=3.11,<4"]
@@ -62,7 +88,7 @@ exclude = [
 ]
 
 [tool.uv]
-default-groups = ["dev"]
+default-groups = ["dev", "pre-commit", "tests", "typing"]
 
 [tool.ruff]
 src = ["src"]
@@ -79,7 +105,120 @@ select = [
     "UP",  # pyupgrade
     "W",  # pycodestyle warning
 ]
+ignore = [
+    "UP007",  # Use X | Y for type annotations; doesn't work with some of our (stringy) type definitions - should aim to resolve this
+]
 
-[tool.pytest]
-norecursedirs = [".tox", ".git", ".cache", "*.egg", "htmlcov"]
-addopts = ["-vvl",  "--capture", "fd", "--strict", "-W error:::flask_allows2"]
+[tool.ruff.lint.isort]
+force-single-line = true
+order-by-type = false
+
+[tool.coverage.run]
+branch = true
+source = ["flask_allows2", "tests"]
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.coverage.report]
+exclude_also = [
+    "if t.TYPE_CHECKING",
+    "raise NotImplementedError",
+    ": \\.{3}",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "default::pytest.PytestUnraisableExceptionWarning",
+]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/flask_allows2/"]
+warn_unused_configs = true
+
+# TODO if all of these can be enabled we can just set 'strict = true'
+disallow_subclassing_any = true
+#disallow_untyped_calls = true
+#disallow_untyped_defs = true
+#disallow_incomplete_defs = true
+#check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+# warn_unused_ignores = true
+# warn_return_any = true
+no_implicit_reexport = true
+strict_equality = true
+extra_checks = true
+
+[tool.pyright]
+pythonVersion = "3.12"
+include = ["src"]
+typeCheckingMode = "basic"
+
+
+[tool.tox]
+env_list = [
+    "py3.14", "py3.13", "py3.12",
+    "style",
+    "typing",
+    "docs",
+]
+
+[tool.tox.env_run_base]
+description = "pytest on latest dependency versions"
+runner = "uv-venv-lock-runner"
+package = "wheel"
+wheel_build_env = ".pkg"
+constrain_package_deps = true
+use_frozen_constraints = true
+dependency_groups = ["tests"]
+env_tmp_dir = "{toxworkdir}/tmp/{envname}"
+commands = [[
+    "pytest", "-v", "--capture=tee-sys", "--tb=short", "--basetemp={env_tmp_dir}",
+    {replace = "posargs", default = [], extend = true},
+]]
+
+[tool.tox.env.style]
+description = "run all pre-commit hooks on all files"
+dependency_groups = ["pre-commit"]
+skip_install = true
+commands = [["pre-commit", "run", "--all-files"]]
+
+[tool.tox.env.typing]
+description = "run static type checkers"
+dependency_groups = ["typing"]
+commands = [
+    ["mypy"],
+    ["pyright"],
+]
+
+[tool.tox.env.docs]
+description = "build docs"
+dependency_groups = ["docs"]
+commands = [["sphinx-build", "-E", "-W", "-b", "html", "docs", "docs/_build/"]]
+
+[tool.tox.env.update-actions]
+description = "update GitHub Actions pins"
+labels = ["update"]
+dependency_groups = ["gha-update"]
+skip_install = true
+commands = [["gha-update"]]
+
+[tool.tox.env.update-pre_commit]
+description = "update pre-commit pins"
+labels = ["update"]
+dependency_groups = ["pre-commit"]
+skip_install = true
+commands = [["pre-commit", "autoupdate", "--freeze", "-j4"]]
+
+[tool.tox.env.update-requirements]
+description = "update uv lock"
+labels = ["update"]
+dependency_groups = []
+no_default_groups = true
+skip_install = true
+commands = [["uv", "lock", {replace = "posargs", default = ["-U"], extend = true}]]

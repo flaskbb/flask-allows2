@@ -1,11 +1,9 @@
 import pytest
 
-from flask_allows2.overrides import (
-    Override,
-    OverrideManager,
-    _override_ctx_stack,
-    current_overrides,
-)
+from flask_allows2.overrides import _override_ctx_stack
+from flask_allows2.overrides import current_overrides
+from flask_allows2.overrides import Override
+from flask_allows2.overrides import OverrideManager
 from flask_allows2.requirements import Requirement
 
 
@@ -33,7 +31,7 @@ class AClassRequirement(Requirement):
         )
 
 
-class TestCurrentOverrides(object):
+class TestCurrentOverrides:
     def test_current_overrides_with_no_context_returns_None(self):
         assert current_overrides == None  # noqa: E711
 
@@ -59,7 +57,7 @@ class TestCurrentOverrides(object):
         manager.pop()
 
 
-class TestOverride(object):
+class TestOverride:
     def test_shows_if_requirement_is_overridden(self):
         override = Override(some_requirement)
         assert override.is_overridden(some_requirement)
@@ -102,7 +100,7 @@ class TestOverride(object):
         assert some_requirement not in override
 
 
-class TestOverrideManager(object):
+class TestOverrideManager:
     def test_override_manager_populates_overrides_local(self):
         manager = OverrideManager()
         override = Override(some_requirement)

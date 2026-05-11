@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
+from typing import Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from .requirements import Requirement
 
 from .allows import _get_allows

@@ -1,13 +1,14 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, Any
+from typing import Any
+from typing import TYPE_CHECKING
 
-from flask import current_app, request
+from flask import current_app
+from flask import request
 
 from .allows import _get_allows
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from .requirements import Requirement
 
 __all__ = ("requires", "exempt_from_requirements", "guard_entire")
@@ -56,14 +57,13 @@ def requires(
     def decorator(f):
         @wraps(f)
         def allower(*args, **kwargs):
-
             result = _get_allows().run(
                 requirements,
                 identity=identity,
                 on_fail=on_fail,
                 throws=throws,
                 f_args=args,
-                f_kwargs=kwargs,  # type: ignore
+                f_kwargs=kwargs,
             )
 
             # authorization failed
