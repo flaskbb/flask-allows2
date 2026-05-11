@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 1.2.0 (2026-05-11)
+--------------------------
+
+* Re-add tox config to test multiple Python versions. pyproject.toml is inspired by Flask's pyproject file.
+* Fix typings for Python 3.12 and Python 3.13
+
+
 Version 1.1.0 (2026-02-15)
 --------------------------
 
