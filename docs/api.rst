@@ -48,3 +48,10 @@ Utilities
 .. autofunction:: flask_allows2.views.requires
 .. autofunction:: flask_allows2.views.exempt_from_requirements
 .. autofunction:: flask_allows2.views.guard_entire
+
+
+Type Aliases
+============
+
+.. automodule:: flask_allows2.typing
+    :members:

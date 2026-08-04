@@ -2,10 +2,12 @@ import operator
 from abc import ABCMeta
 from abc import abstractmethod
 from collections.abc import Callable
-from typing import Any
+from typing import cast
 
 from .allows import _call_requirement
-from .overrides import current_overrides
+from .overrides import _current_overrides
+from .typing import Identity
+from .typing import RequirementType
 
 __all__ = (
     "Requirement",
@@ -25,7 +27,7 @@ class Requirement(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def fulfill(self, user) -> bool:
+    def fulfill(self, user: Identity) -> bool:
         """
         Abstract method called to verify the requirement against the current
         user and request.
@@ -36,12 +38,12 @@ class Requirement(metaclass=ABCMeta):
         :param user: The current identity
         :param request: The current request.
         """
-        return NotImplemented
+        return cast(bool, NotImplemented)
 
-    def __call__(self, user):
+    def __call__(self, user: Identity) -> bool:
         return _call_requirement(self.fulfill, user)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}()>"
 
 
@@ -84,15 +86,19 @@ class ConditionalRequirement(Requirement):
     """
 
     def __init__(
-        self, *requirements: Callable[[type["Requirement"]], bool], **kwargs: Any
-    ):
+        self,
+        *requirements: RequirementType,
+        op: Callable[[bool, bool], bool] = operator.and_,
+        until: bool | None = None,
+        negated: bool | None = None,
+    ) -> None:
         self.requirements = requirements
-        self.op = kwargs.get("op", operator.and_)
-        self.until = kwargs.get("until")
-        self.negated = kwargs.get("negated")
+        self.op = op
+        self.until = until
+        self.negated = negated
 
     @classmethod
-    def And(cls, *requirements: Callable[[type["Requirement"]], bool]):
+    def And(cls, *requirements: RequirementType) -> "ConditionalRequirement":
         """
         Short cut helper to construct a combinator that uses
         :meth:`operator.and_` to reduce requirement results and stops
@@ -103,7 +109,7 @@ class ConditionalRequirement(Requirement):
         return cls(*requirements, op=operator.and_, until=False)
 
     @classmethod
-    def Or(cls, *requirements: Callable[[type["Requirement"]], bool]):
+    def Or(cls, *requirements: RequirementType) -> "ConditionalRequirement":
         """
         Short cut helper to construct a combinator that uses
         :meth:`operator.or_` to reduce requirement results and stops evaluating
@@ -114,7 +120,7 @@ class ConditionalRequirement(Requirement):
         return cls(*requirements, op=operator.or_, until=True)
 
     @classmethod
-    def Not(cls, *requirements: Callable[[type["Requirement"]], bool]):
+    def Not(cls, *requirements: RequirementType) -> "ConditionalRequirement":
         """
         Shortcut helper to negate a requirement or requirements.
 
@@ -122,14 +128,14 @@ class ConditionalRequirement(Requirement):
         """
         return cls(*requirements, negated=True)
 
-    def fulfill(self, user: Any):
-        reduced = None
+    def fulfill(self, user: Identity) -> bool:
+        reduced: bool | None = None
 
         requirements = self.requirements
+        overrides = _current_overrides()
 
-        # can't use is because is a proxy
-        if current_overrides != None:  # noqa: E711
-            requirements = tuple(r for r in requirements if r not in current_overrides)
+        if overrides is not None:
+            requirements = tuple(r for r in requirements if r not in overrides)
 
         for r in requirements:
             result = _call_requirement(r, user)
@@ -147,32 +153,32 @@ class ConditionalRequirement(Requirement):
 
         return True
 
-    def __and__(self, require: Callable[[type["Requirement"]], bool]):
+    def __and__(self, require: RequirementType) -> "ConditionalRequirement":
         return self.And(self, require)
 
-    def __or__(self, require: Callable[[type["Requirement"]], bool]):
+    def __or__(self, require: RequirementType) -> "ConditionalRequirement":
         return self.Or(self, require)
 
-    def __invert__(self):
+    def __invert__(self) -> "ConditionalRequirement":
         return self.Not(self)
 
-    def __repr__(self):
-        additional = []
+    def __repr__(self) -> str:
+        parts = []
 
         for name in ["op", "negated", "until"]:
             value = getattr(self, name)
             if not value:
                 continue
-            additional.append(f"{name}={value!r}")
+            parts.append(f"{name}={value!r}")
 
-        if additional:
-            additional = f" {', '.join(additional)}"
+        if parts:
+            additional = f" {', '.join(parts)}"
         else:
             additional = ""
 
         return f"<{self.__class__.__name__} requirements={self.requirements!r}{additional}>"  # noqa: E501
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, ConditionalRequirement)
             and self.op == other.op
@@ -181,7 +187,7 @@ class ConditionalRequirement(Requirement):
             and self.requirements == other.requirements
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.requirements, self.op, self.until, self.negated))
 
 

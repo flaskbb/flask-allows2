@@ -1,15 +1,18 @@
 from collections.abc import Callable
+from collections.abc import Iterable
 from collections.abc import Mapping
 from collections.abc import Sequence
 from functools import wraps
 from itertools import chain
 from typing import Any
+from typing import cast
 from typing import Literal
 from typing import overload
-from typing import TYPE_CHECKING
+from typing import TypeVar
 
 from flask import current_app
 from flask import Flask
+from flask import Response
 from werkzeug.datastructures import ImmutableDict
 from werkzeug.exceptions import Forbidden
 
@@ -17,11 +20,14 @@ from .additional import Additional
 from .additional import AdditionalManager
 from .overrides import Override
 from .overrides import OverrideManager
-
-if TYPE_CHECKING:
-    from .requirements import Requirement
+from .typing import Identity
+from .typing import OnFail
+from .typing import RequirementType
+from .typing import Throws
 
 __all__ = ["Allows"]
+
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 
 class Allows:
@@ -40,10 +46,10 @@ class Allows:
     def __init__(
         self,
         app: Flask | None = None,
-        identity_loader: Callable[[], Any] | None = None,
-        throws: type[Exception] = Forbidden,
-        on_fail: Callable[..., Any] | Any | None = None,
-    ):
+        identity_loader: Callable[[], Identity] | None = None,
+        throws: Throws = Forbidden,
+        on_fail: OnFail = None,
+    ) -> None:
         self._identity_loader = identity_loader
         self.throws = throws
 
@@ -54,7 +60,7 @@ class Allows:
         if app:
             self.init_app(app)
 
-    def init_app(self, app: Flask):
+    def init_app(self, app: Flask) -> None:
         """
         Initializes the Flask-Allows object against the provided application
         """
@@ -63,25 +69,29 @@ class Allows:
         app.extensions["allows"] = self
 
         @app.before_request
-        def start_context(*a: Any, **k: Any):
+        def start_context(*a: Any, **k: Any) -> None:
             self.overrides.push(Override())
             self.additional.push(Additional())
 
         @app.after_request
-        def cleanup(response: Any):
+        def cleanup(response: Response) -> Response:
             self.clear_all_overrides()
             self.clear_all_additional()
             return response
 
     def requires(
         self,
-        *requirements: Callable[[type["Requirement"]], bool] | Callable[[Any], bool],
-        **opts: Any,
-    ):
+        *requirements: RequirementType,
+        identity: Identity = None,
+        on_fail: OnFail = None,
+        throws: Throws | None = None,
+    ) -> Callable[[_F], _F]:
         """
         Decorator to enforce requirements on routes
 
         :param requirements: Collection of requirements to impose on view
+        :param identity: Optional, keyword only. An identity to use in place
+            of the currently loaded identity.
         :param throws: Optional, keyword only. Exception to throw for this
             route, if provided it takes precedence over the exception stored
             on the instance
@@ -90,13 +100,9 @@ class Allows:
             configured on the instance.
         """
 
-        identity = opts.get("identity")
-        on_fail = opts.get("on_fail")
-        throws = opts.get("throws")
-
-        def decorator(f: Callable[..., Any]):
+        def decorator(f: _F) -> _F:
             @wraps(f)
-            def allower(*args, **kwargs):
+            def allower(*args: Any, **kwargs: Any) -> Any:
                 result = self.run(
                     requirements,
                     identity=identity,
@@ -112,11 +118,11 @@ class Allows:
 
                 return f(*args, **kwargs)
 
-            return allower
+            return cast(_F, allower)
 
         return decorator
 
-    def identity_loader(self, f: Callable[[], Any]):
+    def identity_loader(self, f: Callable[[], Identity]) -> Callable[[], Identity]:
         """
         Used to provide an identity loader after initialization of the
         extension.
@@ -142,11 +148,9 @@ class Allows:
 
     def fulfill(
         self,
-        requirements: Sequence[
-            Callable[[type["Requirement"]], bool] | Callable[[Any], bool]
-        ],
-        identity: Any | None = None,
-    ):
+        requirements: Iterable[RequirementType],
+        identity: Identity = None,
+    ) -> bool:
         """
         Checks that the provided or current identity meets each requirement
         passed to this method.
@@ -166,19 +170,22 @@ class Allows:
         if not identity and self._identity_loader is not None:
             identity = self._identity_loader()
 
-        if self.additional.current:
-            all_requirements = chain(iter(self.additional.current), requirements)  # type: ignore
-        else:
-            all_requirements = iter(requirements)  # type: ignore
+        all_requirements: Iterable[RequirementType]
+        additional = self.additional.current
 
-        if self.overrides.current is not None:
-            all_requirements = (
-                r for r in all_requirements if r not in self.overrides.current
-            )  # type: ignore
+        if additional:
+            all_requirements = chain(iter(additional), requirements)
+        else:
+            all_requirements = iter(requirements)
+
+        overrides = self.overrides.current
+
+        if overrides is not None:
+            all_requirements = (r for r in all_requirements if r not in overrides)
 
         return all(_call_requirement(r, identity) for r in all_requirements)
 
-    def clear_all_overrides(self):
+    def clear_all_overrides(self) -> None:
         """
         Helper method to remove all override contexts, this is called automatically
         during the after request phase in Flask. However it is provided here
@@ -192,7 +199,7 @@ class Allows:
         while self.overrides.current is not None:
             self.overrides.pop()
 
-    def clear_all_additional(self):
+    def clear_all_additional(self) -> None:
         """
         Helper method to remove all additional contexts, this is called
         automatically during the after request phase in Flask. However it is
@@ -208,16 +215,14 @@ class Allows:
 
     def run(
         self,
-        requirements: Sequence[
-            Callable[[type["Requirement"]], bool] | Callable[[Any], bool]
-        ],
-        identity: Any | None = None,
-        throws: type[Exception] | None = None,
-        on_fail: Callable[..., Any] | Any | None = None,
+        requirements: Iterable[RequirementType],
+        identity: Identity = None,
+        throws: Throws | None = None,
+        on_fail: OnFail = None,
         f_args: Sequence[Any] = (),
         f_kwargs: Mapping[str, Any] = ImmutableDict(),
         use_on_fail_return: bool = True,
-    ):
+    ) -> Any:
         """
         Used to preform a full run of the requirements and the options given,
         this method will invoke on_fail and/or throw the appropriate exception
@@ -246,6 +251,8 @@ class Allows:
                 return result
             raise throws
 
+        return None
+
 
 @overload
 def _get_allows() -> Allows: ...
@@ -271,14 +278,15 @@ def _get_allows(app: Flask | None = None, silent: bool = False) -> Allows | None
     if "allows" not in app.extensions:
         raise RuntimeError("Flask-Allows2 not configured against current app")
 
-    return app.extensions["allows"]
+    allows: Allows = app.extensions["allows"]
+    return allows
 
 
-def _make_callable(func_or_value: Callable[..., Any] | Any):
+def _make_callable(func_or_value: OnFail) -> Callable[..., Any]:
     if not callable(func_or_value):
         return lambda *a, **k: func_or_value
-    return func_or_value
+    return cast(Callable[..., Any], func_or_value)
 
 
-def _call_requirement(requirement, user):
+def _call_requirement(requirement: RequirementType, user: Identity) -> bool:
     return requirement(user)

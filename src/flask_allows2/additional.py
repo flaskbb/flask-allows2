@@ -1,8 +1,14 @@
+from collections.abc import Callable
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import wraps
+from typing import Any
+from typing import cast
 
 from werkzeug.local import LocalProxy
 from werkzeug.local import LocalStack
+
+from .typing import RequirementType
 
 _additional_ctx_stack: LocalStack[tuple["AdditionalManager", "Additional"]] = (
     LocalStack()
@@ -11,22 +17,28 @@ _additional_ctx_stack: LocalStack[tuple["AdditionalManager", "Additional"]] = (
 __all__ = ("current_additions", "Additional", "AdditionalManager")
 
 
-@LocalProxy
-def current_additions():
-    """
-    Proxy to the currently added requirements
-    """
+def _current_additions() -> "Additional | None":
     rv = _additional_ctx_stack.top
     if rv is None:
         return None
     return rv[1]
 
 
-def _isinstance(f):
+current_additions: "Additional" = LocalProxy(_current_additions)  # type: ignore[assignment]
+"""
+Proxy to the currently added requirements.
+
+Evaluates to ``None`` when no additional context is pushed.
+"""
+
+
+def _isinstance[R](
+    f: Callable[["Additional", "Additional"], R],
+) -> Callable[["Additional", Any], R]:
     @wraps(f)
-    def check(self, other):
+    def check(self: "Additional", other: Any) -> R:
         if not isinstance(other, Additional):
-            return NotImplemented
+            return cast(R, NotImplemented)
         return f(self, other)
 
     return check
@@ -72,63 +84,65 @@ class Additional:
     requirements contained in them.
     """
 
-    def __init__(self, *requirements):
-        self._requirements = set(requirements)
+    def __init__(self, *requirements: RequirementType) -> None:
+        self._requirements: set[RequirementType] = set(requirements)
 
-    def add(self, requirement, *requirements):
+    def add(self, requirement: RequirementType, *requirements: RequirementType) -> None:
         self._requirements.update((requirement,) + requirements)
 
-    def remove(self, requirement, *requirements):
+    def remove(
+        self, requirement: RequirementType, *requirements: RequirementType
+    ) -> None:
         self._requirements.difference_update((requirement,) + requirements)
 
     @_isinstance
-    def __add__(self, other):
+    def __add__(self, other: "Additional") -> "Additional":
         requirements = self._requirements | other._requirements
         return Additional(*requirements)
 
     @_isinstance
-    def __iadd__(self, other):
+    def __iadd__(self, other: "Additional") -> "Additional":
         if len(other._requirements) > 0:
-            self._requirements.add(*other._requirements)
+            self.add(*other._requirements)
         return self
 
     @_isinstance
-    def __sub__(self, other):
+    def __sub__(self, other: "Additional") -> "Additional":
         requirements = self._requirements - other._requirements
         return Additional(*requirements)
 
     @_isinstance
-    def __isub__(self, other):
+    def __isub__(self, other: "Additional") -> "Additional":
         if len(other._requirements) > 0:
             self.remove(*other._requirements)
         return self
 
     @_isinstance
-    def __eq__(self, other):
+    def __eq__(self, other: "Additional") -> bool:
         return self._requirements == other._requirements
 
     @_isinstance
-    def __ne__(self, other):
+    def __ne__(self, other: "Additional") -> bool:
         return not self == other
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[RequirementType]:
         return iter(self._requirements)
 
-    def is_added(self, requirement):
+    def is_added(self, requirement: RequirementType) -> bool:
         return requirement in self._requirements
 
-    def __contains__(self, requirement):
+    def __contains__(self, requirement: RequirementType) -> bool:
         return self.is_added(requirement)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._requirements)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return len(self) != 0
 
     __nonzero__ = __bool__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Additional({self._requirements!r})"
 
 
@@ -139,7 +153,7 @@ class AdditionalManager:
     ``allows.additional`` to access these controls.
     """
 
-    def push(self, additional: "Additional", use_parent: bool = False):
+    def push(self, additional: Additional, use_parent: bool = False) -> None:
         """
         Binds an additional to the current context, optionally use the
         current additionals in conjunction with this additional
@@ -154,7 +168,7 @@ class AdditionalManager:
 
         _additional_ctx_stack.push((self, additional))
 
-    def pop(self):
+    def pop(self) -> None:
         """
         Pops the latest additional context.
 
@@ -168,19 +182,16 @@ class AdditionalManager:
             )
 
     @property
-    def current(self):
+    def current(self) -> Additional | None:
         """
         Returns the current additional context if set otherwise None
         """
-        try:
-            return (
-                None if not _additional_ctx_stack.top else _additional_ctx_stack.top[1]
-            )
-        except TypeError:
-            return None
+        return _current_additions()
 
     @contextmanager
-    def additional(self, additional, use_parent=False):
+    def additional(
+        self, additional: Additional, use_parent: bool = False
+    ) -> Iterator[Additional | None]:
         """
         Allows temporarily pushing an additional context, yields the new context
         into the following block.

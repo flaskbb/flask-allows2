@@ -12,6 +12,10 @@ from .requirements import ConditionalRequirement
 from .requirements import Not
 from .requirements import Or
 from .requirements import Requirement
+from .typing import Identity
+from .typing import OnFail
+from .typing import RequirementType
+from .typing import Throws
 from .views import exempt_from_requirements
 from .views import guard_entire
 from .views import requires
@@ -24,17 +28,20 @@ __all__ = (
     "C",
     "ConditionalRequirement",
     "current_additions",
+    "current_overrides",
     "exempt_from_requirements",
     "guard_entire",
-    "current_overrides",
+    "Identity",
     "Not",
+    "OnFail",
     "Or",
     "Override",
     "OverrideManager",
     "Permission",
-    "Permission",
     "Requirement",
+    "RequirementType",
     "requires",
+    "Throws",
 )
 
 __version__ = "1.2.0"

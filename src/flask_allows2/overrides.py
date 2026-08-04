@@ -1,30 +1,42 @@
+from collections.abc import Callable
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import wraps
+from typing import Any
+from typing import cast
 
 from werkzeug.local import LocalProxy
 from werkzeug.local import LocalStack
+
+from .typing import RequirementType
 
 _override_ctx_stack: LocalStack[tuple["OverrideManager", "Override"]] = LocalStack()
 
 __all__ = ("current_overrides", "Override", "OverrideManager")
 
 
-@LocalProxy
-def current_overrides() -> "Override | None":
-    """
-    Proxy to the currently pushed override context.
-    """
+def _current_overrides() -> "Override | None":
     rv = _override_ctx_stack.top
     if rv is None:
         return None
     return rv[1]
 
 
-def _isinstance(f):
+current_overrides: "Override" = LocalProxy(_current_overrides)  # type: ignore[assignment]
+"""
+Proxy to the currently pushed override context.
+
+Evaluates to ``None`` when no override context is pushed.
+"""
+
+
+def _isinstance[R](
+    f: Callable[["Override", "Override"], R],
+) -> Callable[["Override", Any], R]:
     @wraps(f)
-    def check(self, other):
+    def check(self: "Override", other: Any) -> R:
         if not isinstance(other, Override):
-            return NotImplemented
+            return cast(R, NotImplemented)
         return f(self, other)
 
     return check
@@ -59,22 +71,24 @@ class Override:
     disabled requirements.
     """
 
-    def __init__(self, *requirements):
-        self._requirements = set(requirements)
+    def __init__(self, *requirements: RequirementType) -> None:
+        self._requirements: set[RequirementType] = set(requirements)
 
-    def add(self, requirement, *requirements):
+    def add(self, requirement: RequirementType, *requirements: RequirementType) -> None:
         """
         Adds one or more requirements to the override context.
         """
         self._requirements.update((requirement,) + requirements)
 
-    def remove(self, requirement, *requirements):
+    def remove(
+        self, requirement: RequirementType, *requirements: RequirementType
+    ) -> None:
         """
         Removes one or more requirements from the override context.
         """
         self._requirements.difference_update((requirement,) + requirements)
 
-    def is_overridden(self, requirement):
+    def is_overridden(self, requirement: RequirementType) -> bool:
         """
         Checks if a particular requirement is current overridden. Can also
         be used as ``in``::
@@ -87,48 +101,48 @@ class Override:
         """
         return requirement in self._requirements
 
-    def __contains__(self, other):
+    def __contains__(self, other: RequirementType) -> bool:
         return self.is_overridden(other)
 
     @_isinstance
-    def __add__(self, other):
+    def __add__(self, other: "Override") -> "Override":
         requirements = self._requirements | other._requirements
         return Override(*requirements)
 
     @_isinstance
-    def __iadd__(self, other):
+    def __iadd__(self, other: "Override") -> "Override":
         if len(other._requirements) > 0:
             self.add(*other._requirements)
         return self
 
     @_isinstance
-    def __sub__(self, other):
+    def __sub__(self, other: "Override") -> "Override":
         requirements = self._requirements - other._requirements
         return Override(*requirements)
 
     @_isinstance
-    def __isub__(self, other):
+    def __isub__(self, other: "Override") -> "Override":
         if len(other._requirements) > 0:
             self.remove(*other._requirements)
         return self
 
     @_isinstance
-    def __eq__(self, other):
+    def __eq__(self, other: "Override") -> bool:
         return self._requirements == other._requirements
 
     @_isinstance
-    def __ne__(self, other):
+    def __ne__(self, other: "Override") -> bool:
         return not self == other
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._requirements)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return len(self) != 0
 
     __nonzero__ = __bool__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Override({self._requirements!r})"
 
 
@@ -139,7 +153,7 @@ class OverrideManager:
     to access these controls.
     """
 
-    def push(self, override, use_parent=False):
+    def push(self, override: Override, use_parent: bool = False) -> None:
         """
         Binds an override to the current context, optionally use the
         current overrides in conjunction with this override
@@ -154,7 +168,7 @@ class OverrideManager:
 
         _override_ctx_stack.push((self, override))
 
-    def pop(self):
+    def pop(self) -> None:
         """
         Pops the latest override context.
 
@@ -168,17 +182,16 @@ class OverrideManager:
             )
 
     @property
-    def current(self):
+    def current(self) -> Override | None:
         """
         Returns the current override context if set otherwise None
         """
-        try:
-            return _override_ctx_stack.top[1]  # type: ignore
-        except TypeError:
-            return None
+        return _current_overrides()
 
     @contextmanager
-    def override(self, override, use_parent=False):
+    def override(
+        self, override: Override, use_parent: bool = False
+    ) -> Iterator[Override | None]:
         """
         Allows temporarily pushing an override context, yields the new context
         into the following block.

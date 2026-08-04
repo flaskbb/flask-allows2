@@ -1,26 +1,31 @@
 from collections.abc import Callable
+from collections.abc import Iterable
 from functools import wraps
 from typing import Any
-from typing import TYPE_CHECKING
+from typing import cast
+from typing import TypeVar
 
 from flask import current_app
 from flask import request
 
 from .allows import _get_allows
-
-if TYPE_CHECKING:
-    from .requirements import Requirement
+from .typing import Identity
+from .typing import OnFail
+from .typing import RequirementType
+from .typing import Throws
 
 __all__ = ("requires", "exempt_from_requirements", "guard_entire")
 
+_F = TypeVar("_F", bound=Callable[..., Any])
 
-def _get_executing_handler():
+
+def _get_executing_handler() -> Callable[..., Any] | None:
     if not request.endpoint:
         return None
     return current_app.view_functions[request.endpoint]
 
 
-def _should_run_requirements():
+def _should_run_requirements() -> bool:
     if request.routing_exception is not None:
         return False
 
@@ -28,8 +33,11 @@ def _should_run_requirements():
 
 
 def requires(
-    *requirements: Callable[[type["Requirement"]], bool] | Callable[[Any], bool], **opts
-):
+    *requirements: RequirementType,
+    identity: Identity = None,
+    on_fail: OnFail = None,
+    throws: Throws | None = None,
+) -> Callable[[_F], _F]:
     """
     Standalone decorator to apply requirements to routes, either function
     handlers or class based views::
@@ -50,13 +58,9 @@ def requires(
         loaded identity.
     """
 
-    identity = opts.get("identity")
-    on_fail = opts.get("on_fail")
-    throws = opts.get("throws")
-
-    def decorator(f):
+    def decorator(f: _F) -> _F:
         @wraps(f)
-        def allower(*args, **kwargs):
+        def allower(*args: Any, **kwargs: Any) -> Any:
             result = _get_allows().run(
                 requirements,
                 identity=identity,
@@ -72,12 +76,12 @@ def requires(
 
             return f(*args, **kwargs)
 
-        return allower
+        return cast(_F, allower)
 
     return decorator
 
 
-def exempt_from_requirements(f):
+def exempt_from_requirements[F: Callable[..., Any]](f: F) -> F:
     """
     Used to exempt a route handler from ambient requirement handling unless it
     is explicitly decorated with a requirement runner::
@@ -118,11 +122,16 @@ def exempt_from_requirements(f):
     .. versionadded:: 0.7.0
     """
 
-    f.__allows_exempt__ = True
+    f.__allows_exempt__ = True  # type: ignore[attr-defined]
     return f
 
 
-def guard_entire(requirements, identity=None, throws=None, on_fail=None):
+def guard_entire(
+    requirements: Iterable[RequirementType],
+    identity: Identity = None,
+    throws: Throws | None = None,
+    on_fail: OnFail = None,
+) -> Callable[[], Any]:
     """
     Used to protect an entire blueprint with a set of requirements. If a route
     handler inside the blueprint should be exempt, then it may be decorated
@@ -199,14 +208,14 @@ def guard_entire(requirements, identity=None, throws=None, on_fail=None):
     .. versionadded: 0.7.0
     """
 
-    def guarder():
+    def guarder() -> Any:
         if _should_run_requirements():
             return _get_allows().run(
                 requirements,
                 identity=identity,
                 on_fail=on_fail,
                 throws=throws,
-                f_kwargs=request.view_args,  # type: ignore
+                f_kwargs=request.view_args or {},
             )
         return None
 

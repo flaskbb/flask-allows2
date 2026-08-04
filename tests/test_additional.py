@@ -15,6 +15,10 @@ def some_other_requirement(user):
     return False
 
 
+def a_third_requirement(user):
+    return True
+
+
 class AClassRequirement(Requirement):
     def __init__(self, the_value):
         self.the_value = the_value
@@ -75,6 +79,13 @@ class TestAdditional:
         additional_1 += Additional(some_other_requirement)
         assert some_requirement in additional_1
         assert some_other_requirement in additional_1
+
+    def test_can_inplace_add_additional_with_several_requirements(self):
+        additional_1 = Additional(some_requirement)
+        additional_1 += Additional(some_other_requirement, a_third_requirement)
+        assert some_requirement in additional_1
+        assert some_other_requirement in additional_1
+        assert a_third_requirement in additional_1
 
     def test_can_take_the_difference_of_two_additionals(self):
         additional_1 = Additional(some_requirement, some_other_requirement)

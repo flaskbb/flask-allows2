@@ -1,11 +1,10 @@
-from collections.abc import Callable
-from typing import Any
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .requirements import Requirement
+from types import TracebackType
 
 from .allows import _get_allows
+from .typing import Identity
+from .typing import OnFail
+from .typing import RequirementType
+from .typing import Throws
 
 __all__ = ("Permission",)
 
@@ -53,20 +52,22 @@ class Permission:
 
     def __init__(
         self,
-        *requirements: Callable[[type["Requirement"]], bool] | Callable[[Any], bool],
-        **opts,
-    ):
+        *requirements: RequirementType,
+        throws: Throws | None = None,
+        identity: Identity = None,
+        on_fail: OnFail = None,
+    ) -> None:
         self.requirements = requirements
-        self.throws = opts.get("throws")
-        self.identity = opts.get("identity")
-        self.on_fail = opts.get("on_fail")
+        self.throws = throws
+        self.identity = identity
+        self.on_fail = on_fail
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return _get_allows().fulfill(self.requirements, identity=self.identity)
 
     __nonzero__ = __bool__
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         _get_allows().run(
             self.requirements,
             identity=self.identity,
@@ -75,5 +76,10 @@ class Permission:
             use_on_fail_return=False,
         )
 
-    def __exit__(self, exctype, value, tb):
+    def __exit__(
+        self,
+        exctype: type[BaseException] | None,
+        value: BaseException | None,
+        tb: TracebackType | None,
+    ) -> None:
         pass
