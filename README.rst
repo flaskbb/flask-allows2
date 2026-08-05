@@ -1,6 +1,10 @@
 Flask-Allows2
 =============
 
+.. image:: https://github.com/flaskbb/flask-allows/actions/workflows/tests.yaml/badge.svg
+    :target: https://github.com/flaskbb/flask-allows/actions/workflows/tests.yaml
+    :alt: Tests
+
 Are your permissions making too much noise all the time? Are your permissions
 stomping all over your actual code? Are your permission decorators clawing
 at your line count all the time? Think there's no answer? There is! Flask-Allows.
